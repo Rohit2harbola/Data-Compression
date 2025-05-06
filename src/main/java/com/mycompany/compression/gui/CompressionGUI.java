@@ -140,7 +140,7 @@ public class CompressionGUI extends JPanel {
                 ArrayList<String> dictionary = new ArrayList<>();
                 ArrayList<String> outputList = new ArrayList<>();
 
-                bitStuffing.decompress(inputFile.getAbsolutePath(), dictionary, outputList);
+        //        bitStuffing.decompress(inputFile.getAbsolutePath(), dictionary, outputList);
                 saveToFile(outputFilePath, outputList);
             }
             return "Decompressed file saved at: " + outputFilePath;
