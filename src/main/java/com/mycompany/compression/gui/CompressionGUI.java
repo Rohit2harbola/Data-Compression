@@ -2,12 +2,12 @@ package com.mycompany.compression.gui;
 
 import com.mycompany.compression.compression.HuffmanCompression;
 import com.mycompany.compression.compression.BitStuffing;
-import java.util.ArrayList;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
+import java.util.ArrayList;
 
 public class CompressionGUI extends JPanel {
     private JTextArea inputArea, outputArea;
@@ -17,10 +17,14 @@ public class CompressionGUI extends JPanel {
 
     private JTabbedPane tabbedPane;
     private int userManagementTabIndex;
+    private Image backgroundImage;
 
     public CompressionGUI(JTabbedPane tabbedPane, int userManagementTabIndex) {
         this.tabbedPane = tabbedPane;
         this.userManagementTabIndex = userManagementTabIndex;
+
+        // Load the background image
+        backgroundImage = Toolkit.getDefaultToolkit().getImage("/compression and decompression");
 
         setLayout(new BorderLayout());
 
@@ -62,6 +66,12 @@ public class CompressionGUI extends JPanel {
         decompressBitStuffingButton.addActionListener(new CompressionActionListener(CompressionType.BITSTUFFING, false));
 
         logoutButton.addActionListener(new LogoutActionListener());
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
     }
 
     private class LogoutActionListener implements ActionListener {
@@ -140,7 +150,8 @@ public class CompressionGUI extends JPanel {
                 ArrayList<String> dictionary = new ArrayList<>();
                 ArrayList<String> outputList = new ArrayList<>();
 
-        //        bitStuffing.decompress(inputFile.getAbsolutePath(), dictionary, outputList);
+                // Uncomment and implement bitStuffing.decompress as needed
+                // bitStuffing.decompress(inputFile.getAbsolutePath(), dictionary, outputList);
                 saveToFile(outputFilePath, outputList);
             }
             return "Decompressed file saved at: " + outputFilePath;
