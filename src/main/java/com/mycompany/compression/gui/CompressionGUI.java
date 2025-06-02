@@ -87,12 +87,12 @@ public class CompressionGUI extends JPanel {
     private class CompressionActionListener implements ActionListener {
         private final CompressionType type;
         private final boolean isCompression;
-        private BitStuffing bitStuffing;
+        // private BitStuffing bitStuffing;
 
         CompressionActionListener(CompressionType type, boolean isCompression) {
             this.type = type;
             this.isCompression = isCompression;
-            this.bitStuffing = new BitStuffing();
+            //this.bitStuffing = new BitStuffing();
         }
 
         @Override
@@ -147,7 +147,7 @@ public class CompressionGUI extends JPanel {
             if (type == CompressionType.HUFFMAN) {
                 HuffmanCompression.decompressText(inputFile.getAbsolutePath(), outputFilePath);
             } else {
-                ArrayList<String> dictionary = new ArrayList<>();
+                //ArrayList<String> dictionary = new ArrayList<>();
                 ArrayList<String> outputList = new ArrayList<>();
 
                 // Uncomment and implement bitStuffing.decompress as needed

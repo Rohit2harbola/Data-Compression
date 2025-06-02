@@ -630,6 +630,20 @@
 
 //trial212
 
+// 
+
+
+
+
+
+
+
+
+
+
+
+
+
 package com.mycompany.compression.compression;
 
 import java.awt.image.BufferedImage;
@@ -654,6 +668,8 @@ public class BitStuffing {
             compressText(inputFile, outputFile);
         } else if (fileType != null && fileType.startsWith("image")) {
             compressImage(inputFile, outputFile);
+        } else if (fileType != null && fileType.equals("application/pdf")) {
+            compressPdf(inputFile, outputFile);
         } else {
             throw new UnsupportedOperationException("Unsupported file type: " + fileType);
         }
@@ -669,6 +685,8 @@ public class BitStuffing {
             decompressText(inputFile, outputFile);
         } else if (fileType != null && fileType.startsWith("image")) {
             decompressImage(inputFile, outputFile);
+        } else if (fileType != null && fileType.equals("application/pdf")) {
+            decompressPdf(inputFile, outputFile);
         } else {
             throw new UnsupportedOperationException("Unsupported file type for decompression: " + fileType);
         }
@@ -734,6 +752,16 @@ public class BitStuffing {
         tempJpegFile.delete();
     }
 
+    // PDF COMPRESSION (simply zips the PDF)
+    private static void compressPdf(File inputFile, File outputZipFile) throws IOException {
+        try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(outputZipFile))) {
+            ZipEntry entry = new ZipEntry(inputFile.getName());
+            zos.putNextEntry(entry);
+            Files.copy(inputFile.toPath(), zos);
+            zos.closeEntry();
+        }
+    }
+
     // TEXT DECOMPRESSION
     private static void decompressText(File zipFile, File outputFile) throws IOException {
         Map<String, String> dictionary = loadDictionary("src/main/resources/ascii.txt");
@@ -747,32 +775,55 @@ public class BitStuffing {
         saveToFile(decompressedContent, outputFile);
     }
 
-    // FIXED IMAGE DECOMPRESSION
-   private static void decompressImage(File zipFile, File outputFile) throws IOException {
-    try (ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFile))) {
-        ZipEntry entry = zis.getNextEntry();
-        if (entry != null) {
-            // Ensure .jpg extension
-            if (!outputFile.getName().toLowerCase().endsWith(".jpg")) {
-                outputFile = new File(outputFile.getParent(), outputFile.getName() + ".jpg");
-            }
-
-            // Read from ZIP and write to file properly
-            try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(outputFile))) {
-                byte[] buffer = new byte[1024];
-                int bytesRead;
-                while ((bytesRead = zis.read(buffer)) != -1) {
-                    bos.write(buffer, 0, bytesRead);
+    // IMAGE DECOMPRESSION (restores original extension)
+    private static void decompressImage(File zipFile, File outputFile) throws IOException {
+        try (ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFile))) {
+            ZipEntry entry = zis.getNextEntry();
+            if (entry != null) {
+                String entryName = entry.getName();
+                String ext = "";
+                int dot = entryName.lastIndexOf('.');
+                if (dot != -1) ext = entryName.substring(dot);
+                File out = outputFile;
+                if (!outputFile.getName().toLowerCase().endsWith(ext)) {
+                    out = new File(outputFile.getParent(), outputFile.getName() + ext);
                 }
+                try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(out))) {
+                    byte[] buffer = new byte[1024];
+                    int bytesRead;
+                    while ((bytesRead = zis.read(buffer)) != -1) {
+                        bos.write(buffer, 0, bytesRead);
+                    }
+                }
+                System.out.println("Image decompressed successfully: " + out.getAbsolutePath());
+            } else {
+                throw new IOException("No entries found in the ZIP file.");
             }
-
-            System.out.println("Image decompressed successfully: " + outputFile.getAbsolutePath());
-        } else {
-            throw new IOException("No entries found in the ZIP file.");
         }
     }
-}
 
+    // PDF DECOMPRESSION
+    private static void decompressPdf(File zipFile, File outputFile) throws IOException {
+        try (ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFile))) {
+            ZipEntry entry = zis.getNextEntry();
+            if (entry != null) {
+                File out = outputFile;
+                if (!outputFile.getName().toLowerCase().endsWith(".pdf")) {
+                    out = new File(outputFile.getParent(), outputFile.getName() + ".pdf");
+                }
+                try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(out))) {
+                    byte[] buffer = new byte[1024];
+                    int bytesRead;
+                    while ((bytesRead = zis.read(buffer)) != -1) {
+                        bos.write(buffer, 0, bytesRead);
+                    }
+                }
+                System.out.println("PDF decompressed successfully: " + out.getAbsolutePath());
+            } else {
+                throw new IOException("No entries found in the ZIP file.");
+            }
+        }
+    }
 
     // LOAD DICTIONARY
     private static Map<String, String> loadDictionary(String filePath) throws IOException {
